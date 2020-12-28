@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     otherThreadWorker = new Worker(nullptr);
     otherThreadWorker->moveToThread(otherThread);
+
+    //Для обратки от Worker-a
     connect(otherThreadWorker,&Worker::message,ui->textBrowser,&QTextBrowser::append);
     connect(otherThreadWorker,&Worker::progress,ui->progressBar,&QProgressBar::setValue);
 }
@@ -40,5 +42,5 @@ void MainWindow::on_concurrentButton_clicked()
 
 void MainWindow::on_threadedButton_clicked()
 {
-
+    emit workRequest(someWord, iterations);
 }
