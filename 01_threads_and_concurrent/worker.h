@@ -25,6 +25,8 @@ public slots:
     //! \return Фактически прошедшее время в мсек.
     quint64 doSomeWork(const QString& displayString, const int& iterations);
 
+    quint64 lastElapsed(){return lastElapsed_;}
+
 signals:
     //! \brief progress - Сигнал о текущем прогрессе выполнения задачи
     //! \param percent - Значение прогресса в процентах
@@ -35,6 +37,9 @@ signals:
     void message(QString text);
 
 signals:
+
+private:
+    quint64 lastElapsed_{0};
 
 };
 

@@ -5,6 +5,7 @@
 #include <QThread>
 #include <QtConcurrent>
 #include <QFuture>
+#include <QFutureWatcher>
 #include <QtGlobal>
 #include "worker.h"
 
@@ -28,6 +29,10 @@ private slots:
 
     void on_threadedButton_clicked();
 
+    void on_naiveCallButton_clicked();
+
+    void on_future_ready();
+
 private:
     Ui::MainWindow *ui;
 
@@ -40,5 +45,6 @@ private:
     //Будущий результат вычислений от QtConcurrent::run
     //НЕ ЗАБЫТЬ ОТМЕНИТЬ В ЗАКРЫТИИ ОКНА, ЧТОБЫ ТРЕД НЕ БЕЖАЛ
     QFuture<quint64> future;
+    QFutureWatcher<quint64> watcher;
 };
 #endif // MAINWINDOW_H

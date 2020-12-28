@@ -19,6 +19,6 @@ quint64 Worker::doSomeWork(const QString &displayString, const int &iterations)
         int prgrs = 100.0*float(i)/float(iterations);
         emit progress(prgrs);
     }
-
-    return tmr.elapsed();
+    lastElapsed_ = tmr.elapsed();
+    return lastElapsed_;
 }
