@@ -1,7 +1,10 @@
 #include <iostream>
 
-// Я всё написал в main.cpp, но вообще так не делают, лучше разбить на отдельные файлы. Но так тебе будет проще собрать в студии
+//ВОТ ТУТ СКОРЕЕ ВСЕГО БУДЕТ ОШИБКА НА ВИНДЕ, ПРИДЕТСЯ НАЙТИ ПОДХОДЯЩУЮ БИБЛИОТЕКУ ДЛЯ РЕАЛИЗАЦИИ ВВОДА
+//И ПЕРЕДЕЛАТЬ ФУНКЦИЯ, ОТВЕЧАЮЩУЮ ЗА ВВОД С ЭКРАНА
+#include <ncurses.h>
 
+// Я всё написал в main.cpp, но вообще так не делают, лучше разбить на отдельные файлы. Но так тебе будет проще собрать в студии
 
 //! ================================
 //! Перечисляемый тип для расстояния
@@ -10,8 +13,26 @@ enum Direction{
     Up      = 0,
     Down    = 1,
     Left    = 2,
-    Right   = 3
+    Right   = 3,
 };
+
+//! Инициализация служебных методов библиотеки Ncurses
+void ncursesInit(){
+    initscr();
+    cbreak();
+    noecho();
+}
+
+int getDirection(){
+    int answer =  getch();
+    switch (answer) {
+    case KEY_UP: return (int) Up; break;
+    case KEY_DOWN: return (int) Down; break;
+    case KEY_LEFT: return (int) Down; break;
+    case KEY_RIGHT: return (int) Down; break;
+    default: return -1;
+    }
+}
 
 //! ============================================
 //! Функция, возарващающая случайное направление
@@ -54,12 +75,7 @@ struct Part{
                 newPart->x++;
                 break;
         }
-
-    return newPart;
-    }
-    static bool checkLEgality(/**/){
-        //TODO
-        //Проверка на легальность
+        return newPart;
     }
 };
 
@@ -82,8 +98,20 @@ public:
     bool move(Direction direction, bool grow = false){
         if(!head_)
             return false;
+
+        if(!grow){ //Удаляем последний элемент змейки
+            last_ = last_->prev;
+            delete last_->next;
+            last_->next = nullptr;
+        }
+
         Part* newHead = Part::getAdjacent(head_,direction);
-    //TODO - Проверка на легальность
+        if(!isLegal_(newHead))
+            return false;
+        head_->prev = newHead;
+        newHead->next = head_;
+        head_ = newHead;
+        return true;
     }
 
 
@@ -96,39 +124,50 @@ private:
     int currentLength_ = 0;
     const int maxLength_ = 20;
 
+    //! Проверяет на то, легальна ли позиция фрагмента тела змейки
+    //! (нет ли пересечений с другими фрагментами или не выходит ли за край карты)
+    bool isLegal_(const Part* part){
+        if(part->x >= height_
+                | part->x <= 0
+                | part->y >= width_
+                | part->y <= 0)
+            return false;
+
+        bool intersections = false;
+        Part* currentlyChecking = head_;
+        while(currentlyChecking !=nullptr){
+            if(currentlyChecking->x == part->x & currentlyChecking->y == part->y){
+                 intersections = true;
+                return false;
+            }
+            currentlyChecking = currentlyChecking->next;
+        }
+        return true;
+    }
+
     //! Заполняет тело змеи
     void initBody_(){ //Особо не парился, в каких клетках она зиначально заполняется
         head_ = new Part;
         head_->x = width_ / 2;
         head_->y = height_ / 2;
-        Part* neck = new Part(*head_);
-        switch(randomDirecton()){
-            case Up:
-                neck->y = head_->y - 1;
-                break;
-            case Down:
-                neck->y = head_->y + 1;
-                break;
-            case Left:
-                neck->x = head_->x - 1;
-                break;
-            case Right:
-                neck->x = head_->x + 1;
-                break;
-        }
+        Part* neck = Part::getAdjacent(head_);
         head_->prev = nullptr;
         head_->next = neck;
         neck->prev = head_;
         neck->next = nullptr;
         currentLength_ = 2;
+        last_ = neck;
     };
 
     //! Указатель на голову (первый сегмент) змейки
     Part* head_ = nullptr;
 
+    //! Указатель на последний сегмент змейки
+    Part* last_ = nullptr;
+
+
 };
 
-class Snake;
 
 //! ===========================
 //! Класс, соответствующий полю
@@ -141,12 +180,12 @@ public:
     Field(int width = 20, int height = 20) : width_(width), height_(height){
         //Выделяем память под клетки
         square_ = new char*[height_];
-        for(int h = 0; h <= width_; h++) //<= потому что последним будет стоять '\n', чтобы нормально выводить строки
+        for(int h = 0; h <= width_; h++) //<= потому что последним будет стоять '\0', чтобы нормально выводить строки
             square_[h] = new char[width_];
 
         //Проставляем спецсимволы конца строки
         for(int h = 0; h < height_; h++)
-            square_[h][width_] = '\n';
+            square_[h][width_] = '\0';
 
         //Создаем змейку
         snake_ = new Snake(height_,width_);
@@ -165,12 +204,26 @@ public:
 
     //! Рисуем поле
     void draw(){
+
         //Рисуем клетки поля (по хорошему из бы не перерисчитывать каждый раз, а прерсчитывать только то, что поменялось, но пока так)
         initSqures_();
         //Фиксируем, где змейка
         accountForSnake_();
         for(int h = 0; h < height_; h++)
-            std::cout << square_[h];
+           // std::cout << square_[h] << std::endl;
+            printw(square_[h]);
+    }
+
+    //TODO
+    void moveSnake(Direction direction){
+        snake_->move(direction,true);
+    }
+
+    void dbg(){
+        static int d = 0;
+        d++;
+        if (d >10) d = 0;
+        square_[d][d] = 's';
     }
 
 private:
@@ -215,7 +268,18 @@ private:
 
 int main()
 {
+    //ncursesInit();
     Field field;
-    field.draw();
-    return 0;
+
+    while(true){
+        std::system("clear");
+        field.draw();
+        field.dbg();
+
+        int input = getDirection();
+        if (input == -1)
+            continue;
+
+        field.moveSnake(static_cast<Direction>(input));
+    }
 }
