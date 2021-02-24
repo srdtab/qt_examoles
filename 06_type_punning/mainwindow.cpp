@@ -16,16 +16,6 @@ MainWindow::~MainWindow()
 S_PDCM MainWindow::punPDCM(const QVector<int> &SDs)
 {
     S_PDCM pdcm;
-    int length = SDs.length();
-    quint16 mkoWords[length];
-    for(int i = 0; i < length; i++){
-        mkoWords[i] = static_cast<quint16>(SDs[i]);
-    }
-
-    for(int i = 0; i < length; i++){
-        qDebug()<<"~"<<i<<mkoWords[i];
-    }
-
     //Пока работаю дома и не имею доступа к ПИЛВ
     //считаю, что:
     //сд 0-3   - Х  (double)
@@ -35,16 +25,37 @@ S_PDCM MainWindow::punPDCM(const QVector<int> &SDs)
     //сд 14-15 - VY (float)
     //сд 16-17 - VZ (float)
 
-    pdcm.Y = *(reinterpret_cast<double* >(&mkoWords[0]));  //Координаты - double'ы по IEEE 754 (64 бита, 4 слова МКО)
-    pdcm.Y = *(reinterpret_cast<double* >(&mkoWords[4]));
-    pdcm.Z = *(reinterpret_cast<double* >(&mkoWords[8]));
-    pdcm.VX = *(reinterpret_cast<float* >(&mkoWords[12])); //Скорости - float'ы по IEEE 745 (32 бита, 2 слова МКО)
-    pdcm.VY = *(reinterpret_cast<float* >(&mkoWords[14]));
-    pdcm.VZ = *(reinterpret_cast<float* >(&mkoWords[16]));
+    //Могём подавать на вход punX SDs[i] потому что локальность у QVector такая же, как у "голого" исконно-посконного
+    //массива (соседние элементы в соседних ячейках памяти). С QList такое уже не прокатит
 
-    qDebug()<<pdcm.X<<pdcm.Y<<pdcm.Z<<pdcm.VX<<pdcm.VY<<pdcm.VZ;
+    pdcm.X = punDouble(&SDs[0]); //Координаты - double'ы по IEEE 754 (64 бита, 4 слова МКО)
+    pdcm.Y = punDouble(&SDs[4]);
+    pdcm.Z = punDouble(&SDs[8]);
+    pdcm.VX = punFloat(&SDs[12]);//Скорости - float'ы по IEEE 745 (32 бита, 2 слова МКО)
+    pdcm.VY = punFloat(&SDs[14]);
+    pdcm.VZ = punFloat(&SDs[16]);
 
     return pdcm;
+}
+
+double MainWindow::punDouble(const int *beginning)
+{
+    quint16 memory[4]{ //Обратный порядок потому что у нас Little Endian
+        static_cast<quint16>(beginning[3]),
+                static_cast<quint16>(beginning[2]),
+                static_cast<quint16>(beginning[1]),
+                static_cast<quint16>(beginning[0]),
+    };
+    return *reinterpret_cast<double*>(memory);
+}
+
+float MainWindow::punFloat(const int *beginning)
+{
+    quint16 memory[2]{ //Обратный порядок потому что у нас Little Endian
+                static_cast<quint16>(beginning[1]),
+                static_cast<quint16>(beginning[0]),
+    };
+    return *reinterpret_cast<float*>(memory);
 }
 
 
@@ -57,18 +68,34 @@ void MainWindow::on_pushButton_clicked()
     }
     qDebug()<<"Сгенерировали массив:";
     qDebug()<<SD;
+    QString message;
     for(int i = 0; i< 30; i++){
-        qDebug()<<i<<QString::number((int)SD[i],2).rightJustified(16,'0');
+        message.append(QString::number((int)SD[i],16).rightJustified(4,'0')).append(", ");
     }
+    qDebug()<<message.chopped(2);
 }
 
 void MainWindow::on_pushButton_2_clicked()
 {
+    if(SD.length()!=30){
+        qDebug()<<"Сначала нужно сгенерировать СД!";
+        return;
+    }
     auto pdcm = punPDCM(SD);
-    qDebug()<<"После преобразования получили:";
-    qDebug()<<pdcm.X<<pdcm.Y<<pdcm.Z<<pdcm.VX<<pdcm.VY<<pdcm.VZ;
+
+        qDebug()<<pdcm.X<<pdcm.Y<<pdcm.Z<<pdcm.VX<<pdcm.VY<<pdcm.VZ;
+
+        qDebug()
+                <<QString::number(*reinterpret_cast<quint64*>(&pdcm.X),16)
+                <<QString::number(*reinterpret_cast<quint64*>(&pdcm.Y),16)
+                <<QString::number(*reinterpret_cast<quint64*>(&pdcm.Z),16)
+                <<QString::number(*reinterpret_cast<quint32*>(&pdcm.VX),16)
+                <<QString::number(*reinterpret_cast<quint32*>(&pdcm.VY),16)
+                <<QString::number(*reinterpret_cast<quint32*>(&pdcm.VZ),16);
+
 }
 
+//
 void MainWindow::on_pushButton_3_clicked()
 {
     uint16_t x = 0x0001;
