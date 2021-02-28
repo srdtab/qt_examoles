@@ -47,13 +47,15 @@ private:
     QGraphicsScene* scene_{nullptr};
     QGraphicsView* view_{nullptr};
 
-    //! Размер клетки в пикселях
-    qreal squareSize_{64};
+
     //! Высотав и ширина
     int height_;    //В клеточках
     int width_;
     qreal pheight_; //В пикселях
     qreal pwidth_;
+
+    //! Размер клетки в пикселях
+    qreal squareSize_{64};
 
     FieldMouseFilter* filter_;
 

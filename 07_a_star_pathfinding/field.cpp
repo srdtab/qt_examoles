@@ -1,6 +1,6 @@
 #include "field.h"
 Field::Field(int height, int width, qreal squareSize, QObject *parent)
-    : height_(height), width_(width), squareSize_(squareSize), QObject(parent)
+    : QObject(parent), height_(height), width_(width), squareSize_(squareSize)
 {
     setSquareSize(squareSize_);
     scene_ = new QGraphicsScene(0.0,0.0,pheight_,pwidth_,this);
