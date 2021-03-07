@@ -43,6 +43,10 @@ else()
     field.h
     square.cpp
     square.h
+    pathfindingalgorithm.cpp
+    pathfindingalgorithm.h
+    coordinates.cpp
+    coordinates.h
   )
 endif()
 
