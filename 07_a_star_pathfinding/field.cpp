@@ -7,8 +7,9 @@ Field::Field(int width, int height, qreal squareSize, QObject *parent)
     scene_ = new QGraphicsScene(0.0,0.0,pwidth_,pheight_,this);
     filter_ = new FieldMouseFilter(squareSize, width_, height_, this);
     scene_->installEventFilter(filter_);
-    connect(filter_,&FieldMouseFilter::squareClicked,this,&Field::onSquareClicked);
     squares_.resize(height_);
+    connect(filter_,&FieldMouseFilter::squareClicked,this,&Field::onSquareClicked);
+    connect(filter_,&FieldMouseFilter::squareClicked,this,&Field::squareClicked);
     for (auto & square : squares_){
         square.resize(width_);
     }
@@ -80,6 +81,13 @@ void Field::onSquareClicked(Coordinates coordinate)
 {
     clearSquares();
     paintSquare(coordinate, Qt::red);
+}
+
+void Field::paintSquares(QVector<Coordinates> squares)
+{
+    clearSquares();
+    for(auto& square : squares)
+        paintSquare(square,Qt::red);
 }
 
 FieldMouseFilter::FieldMouseFilter(int squareSize, int fieldWidth, int fieldHeight, QObject *parent)

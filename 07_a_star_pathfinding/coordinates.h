@@ -4,6 +4,7 @@
 
 struct Coordinates{
     Coordinates(int x = 0, int y = 0);
+    Coordinates(const Coordinates& other);
     int x{0};
     int y{0};
 };

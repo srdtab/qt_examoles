@@ -49,7 +49,7 @@ public:
 
 public slots:
     void onSquareClicked(Coordinates coordinate);
-
+    void paintSquares(QVector<Coordinates> squares);
 private:
     //! Отрисовать линии на поле
     void drawLines_();
@@ -82,6 +82,7 @@ private:
 
 
 signals:
+    void squareClicked(Coordinates coordinate);
 
 };
 

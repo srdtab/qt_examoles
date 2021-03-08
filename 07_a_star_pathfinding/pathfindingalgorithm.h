@@ -15,8 +15,7 @@ public:
        Passable = 0,
        Nonpassable = 1
     };
-    Square(PathfindingAlgorithm* algorithm, const Coordinates* coordinates, Content& content);
-    ~Square();
+    Square(PathfindingAlgorithm* algorithm, const Coordinates& coordinates, Content content = Content::Passable);
 
     //! Чем заполнен квадрат
     Content content() const { return content_; }
@@ -36,20 +35,27 @@ private:
     QVector<Coordinates> adjacent_; //Вектор координат соседей
     bool adjacentWasChecked_{false}; //Проводили ли уже поиск соседей (чтобы лишний раз не вычислять)
     void findAdjacent_(); //Формирует вектор соседей
+    bool checkAdjacency_(int x, int y); //Проверяет, есть ли связь с переданной клеткой
 };
 
 class PathfindingAlgorithm : public QObject
 {
     Q_OBJECT
+    friend class Square;
 public:
     explicit PathfindingAlgorithm(int xSize, int ySize, QObject *parent = nullptr);
     ~PathfindingAlgorithm();
+    //! Указатель на клетку с координатами x, y
+    Square* square(int x, int y) {return squares_[x][y];}
+    Square* square(const Coordinates& coordinates) {return squares_[coordinates.x][coordinates.y]; }
+signals:
+    void coordinatesFound(QVector<Coordinates> coordinates);
+public slots:
+    void doWork(Coordinates start);
 private:
     int xSize_;//Ширина в клетках
     int ySize_;//Высота в клетках
     QVector<QVector<Square*> > squares_;
-signals:
-
 };
 
 #endif // PATHFINDINGALGORITHM_H

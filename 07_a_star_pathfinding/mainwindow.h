@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "field.h"
+#include "pathfindingalgorithm.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,5 +23,6 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Field* field_;
+    PathfindingAlgorithm* algorithm_;
 };
 #endif // MAINWINDOW_H
