@@ -2,7 +2,6 @@
 #define FIELD_H
 
 #include <QObject>
-#include <square.h>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsItemGroup>

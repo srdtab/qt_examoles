@@ -1,26 +1,40 @@
 #include "pathfindingalgorithm.h"
 
-PathfindingAlgorithm::PathfindingAlgorithm(QObject *parent) : QObject(parent)
+Square::Square(PathfindingAlgorithm* algorithm, const Coordinates* coordinates, Content& content)
+    : algorithm_(algorithm), coordinates_(coordinates)
 {
 
 }
 
-Content Square::content() const
+const QVector<Coordinates> &Square::adjacent()
 {
-    return content_;
+   if(!adjacentWasChecked_)
+       findAdjacent_();
 }
 
-void Square::setContent(const Content &content)
+void Square::findAdjacent_(){
+
+}
+PathfindingAlgorithm::PathfindingAlgorithm(int xSize, int ySize, QObject *parent)
+    : QObject(parent), xSize_(xSize), ySize_(ySize)
 {
-    content_ = content;
+    squares_.resize(xSize_);
+    for(auto& line : squares_)
+        line.resize(ySize_);
+
+    for(int x = 0; x < xSize_; ++x)
+        for(int y = 0; y < ySize_; ++y){
+            Square* square = new Square;
+            square->setCoordinates(Coordinates(x, y));
+            squares_[x][y] = square;
+        }
 }
 
-Coordinates Square::coordinates() const
-{
-    return coordinates_;
-}
-
-void Square::setCoordinates(const Coordinates &coordinates)
-{
-    coordinates_ = coordinates;
+PathfindingAlgorithm::~PathfindingAlgorithm(){
+    for(int x = 0; x < xSize_; ++x)
+        for(int y = 0; y < ySize_; ++y){
+            Square* square = new Square;
+            square->setCoordinates(Coordinates(x, y));
+            squares_[x][y] = square;
+        }
 }
