@@ -2,14 +2,15 @@
 Field::Field(int width, int height, qreal squareSize, QObject *parent)
     : QObject(parent), height_(height), width_(width), squareSize_(squareSize)
 {
-    setSquareSize(squareSize_);
+    pheight_ = height_ * squareSize_;
+    pwidth_ = width_ * squareSize_;
     scene_ = new QGraphicsScene(0.0,0.0,pwidth_,pheight_,this);
     filter_ = new FieldMouseFilter(squareSize, width_, height_, this);
     scene_->installEventFilter(filter_);
     connect(filter_,&FieldMouseFilter::squareClicked,this,&Field::onSquareClicked);
     squares_.resize(height_);
     for (auto & square : squares_){
-        square.resize(height_);
+        square.resize(width_);
     }
 }
 
@@ -75,25 +76,11 @@ bool Field::checkCoordinate_(const Coordinates &coordinate) const
             return true;
 }
 
-qreal Field::squareSize() const
-{
-    return squareSize_;
-}
-
-void Field::setSquareSize(const qreal &squareSize)
-{
-    squareSize_ = squareSize;
-    pheight_ = height_ * squareSize_;
-    pwidth_ = width_ * squareSize_;
-}
-
 void Field::onSquareClicked(Coordinates coordinate)
 {
     clearSquares();
     paintSquare(coordinate, Qt::red);
 }
-
-
 
 FieldMouseFilter::FieldMouseFilter(int squareSize, int fieldWidth, int fieldHeight, QObject *parent)
     : QObject(parent), squareSize_(squareSize), fieldWidth_(fieldWidth), fieldHeight_(fieldHeight)

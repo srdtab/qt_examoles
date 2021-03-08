@@ -41,8 +41,6 @@ else()
     mainwindow.ui
     field.cpp
     field.h
-    square.cpp
-    square.h
     pathfindingalgorithm.cpp
     pathfindingalgorithm.h
     coordinates.cpp

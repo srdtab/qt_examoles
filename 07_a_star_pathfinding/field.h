@@ -48,11 +48,6 @@ public:
     //! Отрисовывает текущее состояние поля
     void draw();
 
-    //! Возвращает размер клетки в пикселях
-    qreal squareSize() const;
-    //! Устанавливает размер клетки в пикселях
-    void setSquareSize(const qreal &squareSize);
-
 public slots:
     void onSquareClicked(Coordinates coordinate);
 
